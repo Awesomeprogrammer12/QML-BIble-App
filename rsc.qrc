@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>bible.png</file>
+        <file>fallback-search.png</file>
+        <file>home.png</file>
+        <file>tasks.png</file>
+        <file>you.png</file>
+    </qresource>
+</RCC>
