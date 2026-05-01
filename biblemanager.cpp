@@ -73,7 +73,6 @@ QVariantList bibleManager::getVerses(int chapter)
     for(const QJsonValue &value : chapters){
         QJsonObject chapObj = value.toObject();
         if(chapObj["chapter"].toInt() == chapter){
-            // Use toVariantList() because "verses" is an array [] in your JSON
             return chapObj["verses"].toArray().toVariantList();
         }
     }
@@ -97,7 +96,7 @@ int bibleManager::verseLength(int chapter)
         if(chapObj["chapter"].toInt() == chapter){
             qInfo()<<"verselength"+chapObj["verses"].toArray().size();
             file.close();
-            return chapObj["verses"].toArray().size(); // Correctly get array size
+            return chapObj["verses"].toArray().size(); 
         }
     }
     file.close();
