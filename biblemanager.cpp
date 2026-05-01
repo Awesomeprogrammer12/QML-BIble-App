@@ -40,10 +40,13 @@ QVariantMap bibleManager::verses(const QString &chapterName, int chapterNum)   {
     }
     qInfo()<<"not found length of "<<filePth;
 
+    file.close();
     return QVariantMap();
+
 }
 int bibleManager::getBookLength(QString book2){
     QString bookName2 = book2.isEmpty()? m_book : book2;
+    m_book = book2;
     QString filePth = "C:\\Users\\USER\\AppData\\Roaming\\Sheperd_Bible\\" + m_version + "\\" + bookName2 + ".json";
     QFile file(filePth);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -54,5 +57,49 @@ int bibleManager::getBookLength(QString book2){
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject root = doc.object();
     QJsonArray bookss= root["chapters"].toArray();
+    qInfo()<<"gotten book size "+bookss.size();
+    file.close();
     return bookss.size();
+}
+QVariantList bibleManager::getVerses(int chapter)
+{
+    QString filePth = "C:\\Users\\USER\\AppData\\Roaming\\Sheperd_Bible\\" + m_version + "\\" + m_book + ".json";
+    QFile file(filePth);
+    if (!file.open(QIODevice::ReadOnly)) return QVariantList();
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonArray chapters = doc.object()["chapters"].toArray();
+
+    for(const QJsonValue &value : chapters){
+        QJsonObject chapObj = value.toObject();
+        if(chapObj["chapter"].toInt() == chapter){
+            // Use toVariantList() because "verses" is an array [] in your JSON
+            return chapObj["verses"].toArray().toVariantList();
+        }
+    }
+    return QVariantList();
+}
+
+int bibleManager::verseLength(int chapter)
+{
+    qInfo("clled function");
+    QString filePth = "C:\\Users\\USER\\AppData\\Roaming\\Sheperd_Bible\\" + m_version + "\\" + m_book+ ".json";
+    QFile file(filePth);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qInfo()<<"hi my file nol they open "+filePth;
+        return 0;
+    }
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonArray chapters = doc.object()["chapters"].toArray();
+
+    for(const QJsonValue &value : chapters){
+        QJsonObject chapObj = value.toObject();
+        if(chapObj["chapter"].toInt() == chapter){
+            qInfo()<<"verselength"+chapObj["verses"].toArray().size();
+            file.close();
+            return chapObj["verses"].toArray().size(); // Correctly get array size
+        }
+    }
+    file.close();
+    return 0;
 }
