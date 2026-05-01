@@ -8,10 +8,10 @@ Rectangle {
     color:appData.bg2
     radius:10
     gradient:Gradient{
-        GradientStop{position:0;color:appData.bg3}
+        GradientStop{position:0;color:appData.bg2}
         GradientStop{position:0.2;color:"transparent"}
         GradientStop{position:0.8;color:"transparent"}
-        GradientStop{position:1;color:appData.bg3}
+        GradientStop{position:1;color:appData.bg2}
     }
     Rectangle{
         id:selector
@@ -27,7 +27,7 @@ Rectangle {
             height:parent.height*0.8
             x:2
             anchors.verticalCenter:  parent.verticalCenter
-            text:appData.curBook;palette.buttonText: appData.fg
+            text:appData.curBook === "" ?"Choose A Chapter":appData.curBook;palette.buttonText: appData.fg
             Rectangle{id:chapFiller;color:appData.bg3;anchors.fill: parent}
             Rectangle{id:chapFill;color:chapMouse.pressed?appData.bg2:(chapMouse.containsMouse?appData.bg4:appData.bg3);anchors.fill: parent;radius:10}
             MouseArea{id:chapMouse;anchors.fill: parent;hoverEnabled: true;
@@ -47,6 +47,11 @@ Rectangle {
                     radius:10
                     border.color: "gold"
                     border.width: 2
+                }
+                onClosed: {
+                    bookSelect.visible = true
+                    chapSelect.visible = false
+                    verseSelect.visible = false
                 }
                 Flickable{
                     id:bookSelect
@@ -92,20 +97,17 @@ Rectangle {
                                     chapSelect.visible = true
                                     bookSelect.visible = false
                                     appData.curBook = modelData
+                                    appData.bookLength = BibleManager.getBookLength(modelData)
+                                    console.log("bookLengthe:",appData.bookLength)
+
                                 }
                             }
                         }
                     }
                 }
                 Flickable{
-                    id:chapSelect
-                    anchors.fill: parent
-                    visible:false
-                    x:-2
-                    y:0
-                    width:parent.width*0.6
-                    scale:0
-                    z:20
+                    id:chapSelect;anchors.fill: parent;visible:false;x:-2
+                    y:0;width:parent.width;scale:0.95;
                     height:parent.height
                     contentHeight: buttonGrid.height
                     contentWidth: width
@@ -120,16 +122,16 @@ Rectangle {
                         columns:4
                         scale:0.95
                         spacing:10
-                        height:500
+                        height:root.height
                         Repeater{
                             id:buttonModel2
-                            model:root.gBookLength()
+                            model:appData.bookLength
                             Button{
                                 id:button2
-                                width: (buttonGrid.width ) / buttonGrid.columns
-                                height: buttonGrid.height/buttonModel2.model
+                                width: buttonGrid.width/4
+                                height: buttonGrid2.height/10
                                 Text {
-                                    text: modelData
+                                    text: modelData+1
                                     anchors.fill: parent
                                     z:2
                                     font.pixelSize: (root.width+root.height)*0.008;
@@ -143,16 +145,65 @@ Rectangle {
                                         parent22.border.color = appData.accent
                                     }
                                  }
-                                Rectangle {id: parent22;anchors.fill: parent;color: appData.bg}
+                                Rectangle {id: parent22;anchors.fill: parent;color: appData.bg3}
                                 onClicked: {
-                                    bookSelect.visible = false
-                                    appData.curChapter = modelData
+                                    chapSelect.visible = false
+                                    appData.curChapter = modelData+1
+                                    verseSelect.visible = true
+                                    root.setUpVerse();
                                 }
                             }
                         }
                     }
                 }
+                Flickable{
+                    id:verseSelect
+                    height:parent.height;width:parent.width;
+                    contentHeight: 800; contentWidth: width;visible: false
+                    x:0;y:0
+                    Rectangle{
+                        id:info
+                        width:parent.width
+                        height:50
+                        opacity:0.8
+                        color:appData.bg1
+                        anchors.top:parent.top
+                        anchors.left: parent.left
+                        Text{
+                            anchors.fill: parent
+                            text:appData.curBook+":"+appData.curChapter
+                            color:appData.fg;font.bold: true;font.pixelSize: 30
+                        }
+                    }
+                    Grid{
+                        id:rndBtnGrid
+                        columns:5
+                        height:parent
+                        width:parent.width;spacing:10;x:0;y:info.height + spacing;
+                        Component.onCompleted: {
+                            console.log("hi the modelData"+appData.versesLength)
+                        }
+                        Repeater{
+                            id:modeel
+                            model:appData.versesLength
 
+                            Button{
+                                id:rndBtns
+                                width: rndBtnGrid.width/5-rndBtnGrid.spacing
+                                height: buttonGrid2.height/10
+                                text:modelData+1
+                                onClicked:{
+                                    appData.curVerse = modelData
+                                    select.close()
+                                    root.setUpVerse()
+                                    appData.prvReader = appData.currentReader
+                                    appData.currentReader = reader.createObject(biblePage)
+                                    appData.prvReader.destroy(2000);//farewell
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
